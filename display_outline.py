@@ -118,10 +118,12 @@ def stream_video(device):
                 cv2.rectangle(frame, (x1, label_ymin - label_size[1] - 10), (x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
                 cv2.putText(frame, label, (x1, label_ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
-        frame_width = 1280
-        frame_height = 720
-        annotated_frame = cv2.resize(frame, (int(frame_width * (810 / frame_height)), 810))
+        # frame_width = 1280
+        # frame_height = 720
+        # annotated_frame = cv2.resize(frame, (int(frame_width * (810 / frame_height)), 810))
         
+        # ret, buffer = cv2.imencode('.jpg', annotated_frame)
+        annotated_frame = frame
         ret, buffer = cv2.imencode('.jpg', annotated_frame)
         frame = buffer.tobytes()
 
