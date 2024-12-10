@@ -7,6 +7,12 @@
 #define ok_trigger 4 // Untuk reset TCR dan output jika deteksi OK
 #define ng_trigger 5 // 
 
+/********
+ * kirim data ke arduino dengan data serial 
+ * deteksi_ok => jika hasil OK
+ * deteksi_ng => jika hasil NG
+ * deteksi_reset => jika akan reset
+ */
 void matikan_lampu(int pin_out = -1){
     // matikan semua output
     if (pin_out == -1){
@@ -77,8 +83,7 @@ void read_data_python() {
 //      delay(5);
         }
       else if(data == "deteksi_ng"){ //jika hasil deteksi nya NG
-        digitalWrite(ng_trigger, HIGH);
-        blink_output(out_ng, 3, 5);
+        blink_output(ng_trigger, 3, 5);
         digitalWrite(ok_trigger, LOW);
         Serial.println("hasil nya jelek");
         }
@@ -95,9 +100,9 @@ void read_data_python() {
 void blink_output(int pin_out, int repetisi, int interval) {
   interval = interval * 100;
   for (int i = 0; i < repetisi; i++) {
-    digitalWrite(pin_out, HIGH);
-    delay(interval);
     digitalWrite(pin_out, LOW);
+    delay(interval);
+    digitalWrite(pin_out, HIGH);
     delay(interval);
   }
 }

@@ -73,12 +73,11 @@ def stream_video(device):
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + error_frame + b'\r\n')
 
-    # frame_width = 480
-    # frame_height = 240
-
+    frame_width = 640
+    frame_height = 640
     # frame_width = int((frame_height / 9) * 16)
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 
     while True:
         if not cap.isOpened():

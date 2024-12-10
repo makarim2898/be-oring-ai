@@ -54,7 +54,8 @@ model = YOLO("yolov8n.pt")
 custom_names = {0: "OK", 1: "NG"}  # Update with your actual class IDs and custom names
 
 # Custom colors for each class
-custom_colors = {0: (0, 255, 0), 1: (0, 0, 255)}  # Green for Class 1, Red for Class 2
+custom_colors = {0: (0, 255, 0), 
+                 1: (0, 0, 255)}  # Green for Class 1, Red for Class 2
 
 
 ############## function untuk arduino communication #########
@@ -63,7 +64,8 @@ def init_serial_connection():
     while True:
         print("init_serial_connection called")
         try:
-            arduino = serial.Serial('/dev/arduino', 115200, timeout=0.1)  # Initialize the Arduino port with shorter timeout
+            # pastikan symlink arduino atau port sudah benar
+            arduino = serial.Serial('/dev/ttyACM0', 115200, timeout=0.1)  # Initialize the Arduino port with shorter timeout
             if arduino.isOpen():  # Check if the serial port is open
                 arduino.close()  # Close the port if it is open
             arduino.open()  # Reopen the serial port
@@ -86,6 +88,7 @@ def baca_data_arduino():
     while True:
         try:
             input_data = arduino.readline().strip().decode('utf-8')
+            # pastikan data yang dibaca sesuai dengan yang arduino kirim
             if input_data == "start_scan":
                 print(f"FROM ARDUINO: {input_data}")
                 inspectionFlag = True
