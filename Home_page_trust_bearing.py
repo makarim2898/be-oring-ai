@@ -48,7 +48,7 @@ updateData = {'total_judges': 0,
 model_path = "/home/kaizen-ai/Desktop/thrust_bearing_app/python-backend/models/use pretrained/weights/best.pt"
 # model = YOLO("./models/yolov10_normal_online.pt")
 # model = YOLO("./models/best.pt")
-model = YOLO(model_path)
+model = YOLO("yolov8n.pt")
 
 # Class names (replace with your custom names)
 custom_names = {0: "OK", 1: "NG"}  # Update with your actual class IDs and custom names

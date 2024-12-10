@@ -4,7 +4,6 @@ from flask_cors import CORS
 from settings_function import settings
 from Home_page_trust_bearing import home_bearing
 from information import information
-# from openBrowser import openBrowser
 from collectSample import collectSample
 from display_outline import display_outline
 

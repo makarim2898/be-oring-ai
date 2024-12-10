@@ -52,14 +52,14 @@ def stream_video(device):
         yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + error_frame + b'\r\n')
     
-    # Set frame width and height for 16:9 aspect ratio and 1080p resolution
-    frame_width = 720
-    frame_height = 480  # Initial frame height for 16:9 aspect ratio and 720p resolution
+    # # Set frame width and height for 16:9 aspect ratio and 1080p resolution
+    # frame_width = 720
+    # frame_height = 480  # Initial frame height for 16:9 aspect ratio and 720p resolution
 
-    # Calculate the frame width based on the aspect ratio
-    frame_width = int((frame_height / 9) * 16)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+    # # Calculate the frame width based on the aspect ratio
+    # frame_width = int((frame_height / 9) * 16)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -67,13 +67,13 @@ def stream_video(device):
             break
         latest_frame = frame
         
-        #Set frame width and height for 16:9 aspect ratio and 1080p resolution
-        frame_width = 1280
-        frame_height = 720  # Initial frame height for 16:9 aspect ratio and 720p resolution
+        # # Set frame width and height for 16:9 aspect ratio and 1080p resolution
+        # frame_width = 1280
+        # frame_height = 720  # Initial frame height for 16:9 aspect ratio and 720p resolution
 
-        # Calculate the frame width based on the aspect ratio
-        frame_width = int((frame_height / 9) * 16)
-        frame = cv2.resize(frame, (int(frame_width * (810 / frame_height)), 810))
+        # # Calculate the frame width based on the aspect ratio
+        # frame_width = int((frame_height / 9) * 16)
+        # frame = cv2.resize(frame, (int(frame_width * (810 / frame_height)), 810))
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
 

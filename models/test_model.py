@@ -3,7 +3,7 @@ import cv2
 from ultralytics import YOLO
 
 # Load the YOLOv8 model
-model = YOLO("/home/kaizen-ai/Desktop/thrust_bearing_app/python-backend/models/model1yolov10n.pt")
+model = YOLO("yolov8n.pt")
 
 # Open the video file
 cap = cv2.VideoCapture(0)
