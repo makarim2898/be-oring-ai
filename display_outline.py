@@ -107,7 +107,7 @@ def stream_video(device):
             time.sleep(2)
             continue
 
-        results = model(frame, conf=0.60, max_det=2)
+        results = model(frame, conf=0.60, max_det=4)
 
         hitung_yang_ok = 0
         hitung_yang_ng = 0
