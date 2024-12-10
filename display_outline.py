@@ -35,12 +35,24 @@ model_path = "./models/mix_augment_oringchain.pt"
 model = YOLO(model_path)
 
 # Class names (replace with your custom names)
-custom_names = {0: "OK", 
-                1: "NG"}  # Update with your actual class IDs and custom names
+custom_names = {0: 'oring-besar-NG',
+                1: 'oring-besar-OK', 
+                2: 'oring-kecil-NG', 
+                3: 'oring-kecil-OK', 
+                4: 'oring-sedang-NG', 
+                5: 'oring-sedang-OK', 
+                6: 'rantai-NG', 
+                7: 'rantai-OK'}  # Update with your actual class IDs and custom names
 
-# Custom colors for each class
-custom_colors = {0: (0, 255, 0), 
-                 1: (0, 0, 255)}  # Green for Class 1, Red for Class 2
+# Custom colors for each class BGR
+custom_colors = {0: (0, 0, 255), 
+                 1: (0, 255, 0),
+                 2: (0, 0, 255),
+                 3: (0, 255, 0),
+                 4: (0, 0, 255),
+                 5: (0, 255, 0),
+                 6: (0, 0, 255),
+                 7: (0, 255, 0)}  # Green for Class 1, Red for Class 2
 
 ############## function untuk stream frame ke client ################
 def stream_video(device):
@@ -98,14 +110,18 @@ def stream_video(device):
         results = model(frame, conf=0.60, max_det=2)
 
         hitung_yang_ok = 0
+        hitung_yang_ng = 0
         for r in results:
             for box in r.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 cls_id = int(box.cls[0])
                 confidence = box.conf[0]
 
-                if cls_id == 0:
+                if cls_id == 1 and cls_id == 3 and cls_id == 5 and cls_id == 7:
                     hitung_yang_ok += 1
+
+                if cls_id == 0 or cls_id == 2 or cls_id == 4 or cls_id == 8:
+                    hitung_yang_ng += 1
 
                 label = f"{custom_names.get(cls_id, cls_id)}: {confidence:.2f}"
                 color = custom_colors.get(cls_id, (255, 255, 255))
@@ -132,7 +148,7 @@ def stream_video(device):
             print("Ini didalam if scann")
             for r in results:
                 detected_object = len(r.boxes.cls)
-                if detected_object and hitung_yang_ok >= 2:
+                if detected_object and hitung_yang_ok >= 1 and hitung_yang_ng == 0:
                     bearing_detected = True
                     save_image(annotated_frame, 'GOOD', 'bearing_complete')
                     print(f'Detected object: {detected_object}')
