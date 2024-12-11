@@ -51,11 +51,24 @@ model_path = "/home/kaizen-ai/Desktop/thrust_bearing_app/python-backend/models/u
 model = YOLO("yolov8n.pt")
 
 # Class names (replace with your custom names)
-custom_names = {0: "OK", 1: "NG"}  # Update with your actual class IDs and custom names
+custom_names = {0: 'oring-besar-NG',
+                1: 'oring-besar-OK', 
+                2: 'oring-kecil-NG', 
+                3: 'oring-kecil-OK', 
+                4: 'oring-sedang-NG', 
+                5: 'oring-sedang-OK', 
+                6: 'rantai-NG', 
+                7: 'rantai-OK'}  # Update with your actual class IDs and custom names
 
-# Custom colors for each class
-custom_colors = {0: (0, 255, 0), 
-                 1: (0, 0, 255)}  # Green for Class 1, Red for Class 2
+# Custom colors for each class BGR
+custom_colors = {0: (0, 0, 255), 
+                 1: (0, 255, 0),
+                 2: (0, 0, 255),
+                 3: (0, 255, 0),
+                 4: (0, 0, 255),
+                 5: (0, 255, 0),
+                 6: (0, 0, 255),
+                 7: (0, 255, 0)}  # Green for Class 1, Red for Class 2
 
 
 ############## function untuk arduino communication #########
