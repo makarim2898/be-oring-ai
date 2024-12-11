@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, request, jsonify
 from flask_cors import CORS
-import Home_page_trust_bearing as hptb
+import Home_page as hptb
 import time
 import cv2
 import pandas as pd
