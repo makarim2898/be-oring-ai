@@ -289,13 +289,13 @@ def stream_video(index_kamera_yang_di_pakai):
                 ################ lanjut dari sini, mau bikin kondisi saat ls reset kecolek
                 #setting flag menjadi false agar tidak looping
                 oring_detected = False
-                resetInspectionFlag = False
+                resetInspectionFlag = False 
                 inspectionFlag = False
                 frameDelayDone = False
                 
                 print('Bearing not completed yet')
                 # save_image(frame_simpan, "original", "original_image")
-                save_image(frame_simpan, 'NG', f'not_good_{kategori}')
+                # save_image(frame_simpan, 'NG', f'not_good_{kategori}')
                 update_data_dict('last_judgement', oring_detected)
                 update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
                 kirim_data_ke_arduino("out_ng")

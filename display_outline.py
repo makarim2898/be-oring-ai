@@ -170,7 +170,7 @@ def stream_video(device):
                 update_data_dict('last_judgement', oring_rantai_detected)
                 update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
 
-        if not sudah_capture:
+        elif not sudah_capture:
             not_detected_count = sum([
                                     not oring_kecil, 
                                     not oring_besar, 
@@ -182,7 +182,8 @@ def stream_video(device):
             
             jumlah_last_ng = not_detected_count
         
-        if not sudah_capture and ada_object == 1 and oring_rantai_detected is None:
+        #  benerin lagi saat save frame NG
+        if not sudah_capture and ada_object == 1 and jumlah_last_ng >= 1 and oring_rantai_detected:
             latest_frame = NG_frame
             sudah_capture = True
             oring_rantai_detected = False
