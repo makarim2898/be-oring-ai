@@ -38,7 +38,7 @@ void setup() {
 
   //tungggu hingga serial terhubung, berkedip jika belum terhubung
   while(!Serial){
-    blink_output(ok_trigger, 3, 5);
+    blink_output(ng_trigger, 3, 5);
   }
 
   // matikan semua output
@@ -51,17 +51,16 @@ void loop() {
 }
 //****************** ini yang kirim serial ke python ***************************
 void read_pin_input() {
-  
-  if (digitalRead(start_trigger) == LOW) {
+   
+  //bagian reset didalamnya di tambahkan lagi kondisi bypass dan trigger karena biar gak ngunci loop nya
+  if(digitalRead(reset_trigger) == LOW){
+    Serial.println("reset_scan");
+    delay(100);
+  }
+  else if (digitalRead(start_trigger) == LOW) {
     Serial.println("start_scan");
     delay(100);
-  } 
-  //bagian reset didalamnya di tambahkan lagi kondisi bypass dan trigger karena biar gak ngunci loop nya
-  else if(digitalRead(reset_trigger) == LOW){
-      Serial.println("reset_scan");
-      delay(100);
   }
-
   else {
     Serial.println("no_trigger");
     delay(100);
