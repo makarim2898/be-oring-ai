@@ -16,7 +16,7 @@ CORS(home_bearing)
 
 #definisi variabel global untuk flags
 inspectionFlag = False
-bearing_detected = False
+oring_detected = False
 resetInspectionFlag = True
 detections_enable = False
 
@@ -167,7 +167,7 @@ arduino_thread.daemon = True
 
 ############## function untuk stream frame ke client ################
 def stream_video(index_kamera_yang_di_pakai):
-    global latest_frame, bearing_detected, inspectionFlag, updateData, resetInspectionFlag
+    global latest_frame, oring_detected, inspectionFlag, updateData, resetInspectionFlag
     global frameLimiter, frameCount, buffer_frame_NG1, buffer_frame_NG2, buffer_frame_NG3
     global frameDelay, frameDelayDone, counter_gagal_connect, counter_gagal_baca, original_frame, frame_simpan
     time.sleep(2)
@@ -203,10 +203,9 @@ def stream_video(index_kamera_yang_di_pakai):
     if not arduino_thread.is_alive():
         arduino_thread.start()
 
-    frame_width = 480
-    frame_height = 240
-
-    frame_width = int((frame_height / 9) * 16)
+    frame_width = 640
+    frame_height = 640
+    # frame_width = int((frame_height / 9) * 16)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 
@@ -234,7 +233,7 @@ def stream_video(index_kamera_yang_di_pakai):
 
         if inspectionFlag and resetInspectionFlag:
             original_frame = frame
-            results = model(frame, conf=0.60, max_det=2, imgsz=480)
+            results = model(frame, conf=0.60, max_det=4, imgsz=640)
 
             hitung_yang_ok = 0
             hitung_yang_ng = 0
@@ -244,9 +243,10 @@ def stream_video(index_kamera_yang_di_pakai):
                     cls_id = int(box.cls[0])
                     confidence = box.conf[0]
 
-                    if cls_id == 0:
+                    if cls_id == 1 and cls_id == 3 and cls_id == 5 and cls_id == 7:
                         hitung_yang_ok += 1
-                    elif cls_id == 1:
+
+                    if cls_id == 0 or cls_id == 2 or cls_id == 4 or cls_id == 8:
                         hitung_yang_ng += 1
 
                     label = f"{custom_names.get(cls_id, cls_id)}: {confidence:.2f}"
@@ -270,77 +270,25 @@ def stream_video(index_kamera_yang_di_pakai):
         print("flag status: inspection, resetInspect", inspectionFlag, resetInspectionFlag)
         # baca_data_arduino()
         print(f"^^^^^ ini frame count {frameCount} ^^^^^")
-        if inspectionFlag and resetInspectionFlag:
-            frameCount += 1
+        if inspectionFlag and not resetInspectionFlag:
 
-            if frameCount%frameDelay == 0 and not frameDelayDone:
-                frameDelayDone = True
-
-            print(f"memulai pengecekan frame ke {frameCount}, batasnya adalah {frameLimiter} frame")
-            # for r in results:
-            #     detected_object = len(r.boxes.cls)
-
-            #GOOD ketika ada 2 object dan semuanya OK
-            if  hitung_yang_ok >= 2 and frameDelayDone:
+            if hitung_yang_ng :
+                frame_NG = annotated_frame
+            #kondisi ketika benda oke terdeteksi
+            elif hitung_yang_ok :
                 latest_frame = frame
-                bearing_detected = True
+                oring_detected = True
                 resetInspectionFlag = False
                 inspectionFlag = False
                 frameDelayDone = False
                 kirim_data_ke_arduino("out_ok")
-                save_image(annotated_frame, 'GOOD', 'bearing_complete')
-                # print(f'Detected object: {detected_object}')
-                update_data_dict('last_judgement', bearing_detected)
+                save_image(annotated_frame, 'GOOD', 'inspection_complete')
+                update_data_dict('last_judgement', oring_detected)
                 update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
-            
-            #NG ketika terdeteksi no bearing dan bearing ok
-            elif buffer_frame_NG1 is None and hitung_yang_ok > 0 and hitung_yang_ng > 0 and frameCount%frameLimiter != 0 and frameDelayDone:
-                buffer_frame_NG1 = frame
-                frame_simpan1 = original_frame
 
-                print("================ ng1 ========================================================") 
-
-            #NG Ketika terdeteksi no_bearing
-            elif buffer_frame_NG2 is None and hitung_yang_ng > 0 and frameCount%frameLimiter != 0 and frameDelayDone:
-                print("================= ng2 ========================================================")
-                buffer_frame_NG2 = frame
-                frame_simpan2 = original_frame
-
-
-            #NG ketika terdeteksi 1 bearing saja
-            elif buffer_frame_NG1 is None and hitung_yang_ok == 1 and frameCount%frameLimiter != 0 and frameDelayDone: 
-                buffer_frame_NG3 = frame
-                frame_simpan3 = original_frame
-
-                print("================= ng3 ========================================================")
-
-            #salin frame NG ke latest frame
-            elif frameCount%frameLimiter == 0:
-                kategori = ""
-                #salin frame NG ke latest frame berdasar prioritas
-                if buffer_frame_NG1:
-                    latest_frame = buffer_frame_NG1
-                    frame_simpan = frame_simpan1
-                    kategori = "NG1"
-                elif buffer_frame_NG2:
-                    latest_frame = buffer_frame_NG2
-                    frame_simpan = frame_simpan2
-                    kategori = "NG2"
-                elif buffer_frame_NG3 :
-                    latest_frame = buffer_frame_NG3
-                    frame_simpan = frame_simpan3
-                    kategori = "NG3"
-                else :
-                    latest_frame = frame
-                    kategori = "NG4"
-
-                #kosongkan buffer frame untuk next detection
-                buffer_frame_NG1 = None
-                buffer_frame_NG2 = None
-                buffer_frame_NG3 = None
-
+                ################ lanjut dari sini, mau bikin kondisi saat ls reset kecolek
                 #setting flag menjadi false agar tidak looping
-                bearing_detected = False
+                oring_detected = False
                 resetInspectionFlag = False
                 inspectionFlag = False
                 frameDelayDone = False
@@ -348,7 +296,7 @@ def stream_video(index_kamera_yang_di_pakai):
                 print('Bearing not completed yet')
                 # save_image(frame_simpan, "original", "original_image")
                 save_image(frame_simpan, 'NG', f'not_good_{kategori}')
-                update_data_dict('last_judgement', bearing_detected)
+                update_data_dict('last_judgement', oring_detected)
                 update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
                 kirim_data_ke_arduino("out_ng")
 
@@ -481,10 +429,10 @@ def home_show_last():
 
 @home_bearing.route('/bearing/get-data', methods=['GET'])
 def get_data():
-    global bearing_detected
+    global oring_detected
     data = updateData
     print(data['total_judges'])
-    # data = {'bearing_detected': bearing_detected}
+    # data = {'oring_detected': oring_detected}
     return jsonify(data)
 
 @home_bearing.route('/bearing/start', methods=['GET'])
