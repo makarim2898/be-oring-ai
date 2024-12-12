@@ -13,7 +13,7 @@ CORS(display_outline)
 
 #definisi variabel global untuk flags
 inspectionFlag = False
-bearing_detected = False
+oring_rantai_detected = False
 resetInspectionFlag = True
 
 #definisi variabel global untuk
@@ -56,13 +56,16 @@ custom_colors = {0: (0, 0, 255),
 
 ############## function untuk stream frame ke client ################
 def stream_video(device):
-    global latest_frame, bearing_detected, inspectionFlag, updateData, resetInspectionFlag
+    global latest_frame, oring_rantai_detected, inspectionFlag, updateData, resetInspectionFlag
     time.sleep(2)
 
     # Retry mechanism
     max_retry = 5
     retry_count = 0
-
+    jumlah_frame_ok = 0
+    sudah_capture = False
+    ada_object = 0
+    jumlah_last_ng = 0
     cap = cv2.VideoCapture(device)
 
     while not cap.isOpened() and retry_count < max_retry:
@@ -109,20 +112,33 @@ def stream_video(device):
 
         results = model(frame, conf=0.60, max_det=4)
 
-        hitung_yang_ok = 0
-        hitung_yang_ng = 0
+        oring_besar = None
+        oring_sedang = None
+        oring_kecil = None
+        rantai = None
         for r in results:
             for box in r.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 cls_id = int(box.cls[0])
                 confidence = box.conf[0]
 
-                if cls_id == 1 and cls_id == 3 and cls_id == 5 and cls_id == 7:
-                    hitung_yang_ok += 1
-
-                if cls_id == 0 or cls_id == 2 or cls_id == 4 or cls_id == 8:
-                    hitung_yang_ng += 1
-
+                if cls_id == 0:
+                    oring_besar = False
+                if cls_id == 1:
+                    oring_besar = True
+                if cls_id == 2:
+                    oring_kecil = False
+                if cls_id == 3:
+                    oring_kecil = True
+                if cls_id == 4:
+                    oring_sedang = False
+                if cls_id == 5:
+                    oring_sedang = True
+                if cls_id == 6:
+                    rantai = False
+                if cls_id == 7:
+                    rantai = True
+                    
                 label = f"{custom_names.get(cls_id, cls_id)}: {confidence:.2f}"
                 color = custom_colors.get(cls_id, (255, 255, 255))
 
@@ -143,23 +159,61 @@ def stream_video(device):
         frame = buffer.tobytes()
 
         print("flag status", inspectionFlag, resetInspectionFlag)
+        print(f"oring1 = {oring_kecil}, oring2 = {oring_sedang}, oring3 = {oring_besar}, rantai = {rantai}")
+        print(f"jumlah frame oke = {jumlah_frame_ok}")
+        if oring_kecil and oring_besar and oring_sedang and rantai and not sudah_capture:
+            jumlah_frame_ok += 1
+            if jumlah_frame_ok == 3:
+                latest_frame = frame
+                sudah_capture = True
+                oring_rantai_detected = True
+                update_data_dict('last_judgement', oring_rantai_detected)
+                update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
+
+        if not sudah_capture:
+            not_detected_count = sum([
+                                    not oring_kecil, 
+                                    not oring_besar, 
+                                    not oring_sedang, 
+                                    not rantai
+                                ])
+            if not_detected_count >= jumlah_last_ng:
+                NG_frame = frame
+            
+            jumlah_last_ng = not_detected_count
         
+        if not sudah_capture and ada_object == 1 and oring_rantai_detected is None:
+            latest_frame = NG_frame
+            sudah_capture = True
+            oring_rantai_detected = False
+            update_data_dict('last_judgement', oring_rantai_detected)
+            update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
+
+        
+        if sudah_capture and ada_object == 0 and oring_besar:
+            latest_frame = None
+            sudah_capture = False
+            oring_rantai_detected = None
+            jumlah_frame_ok = 0
+
+        ada_object = len(r.boxes.cls)
+        # yang di bawah di trigger sama tombol frontend
         if inspectionFlag:
             print("Ini didalam if scann")
             for r in results:
                 detected_object = len(r.boxes.cls)
-                if detected_object and hitung_yang_ok >= 1 and hitung_yang_ng == 0:
-                    bearing_detected = True
+                if detected_object:
+                    oring_rantai_detected = True
                     save_image(annotated_frame, 'GOOD', 'bearing_complete')
                     print(f'Detected object: {detected_object}')
                     latest_frame = frame
                 else:
-                    bearing_detected = False
+                    oring_rantai_detected = False
                     print('Bearing not completed yet')
                     save_image(annotated_frame, 'NG', 'not_complete')
                     latest_frame = frame
             
-            update_data_dict('last_judgement', bearing_detected)
+            update_data_dict('last_judgement', oring_rantai_detected)
             update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
             inspectionFlag = False
       
@@ -281,7 +335,7 @@ def get_data():
     global updateData
     data = updateData
     # print(data['total_judges'])
-    # data = {'bearing_detected': bearing_detected}
+    # data = {'oring_rantai_detected': oring_rantai_detected}
     return jsonify(data)
 
 @display_outline.route('/outline/start-scan', methods=['GET'])
