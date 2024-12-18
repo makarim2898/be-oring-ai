@@ -110,9 +110,9 @@ def stream_video(device):
             time.sleep(2)
             continue
 
-        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
-
         results = model(frame, conf=0.60, max_det=4)
+        rotated_frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+
 
         oring_besar = None
         oring_sedang = None
@@ -143,20 +143,36 @@ def stream_video(device):
                     
                 label = f"{custom_names.get(cls_id, cls_id)}: {confidence:.2f}"
                 color = custom_colors.get(cls_id, (255, 255, 255))
+                
+                ##### ori gak rotasi
+                # cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
 
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                # label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+                # label_ymin = max(y1, label_size[1] + 10)
+                # cv2.rectangle(frame, (x1, label_ymin - label_size[1] - 10), (x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
+                # cv2.putText(frame, label, (x1, label_ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                new_x1 = rotated_frame.shape[1] - y1
+                new_y1 = x2
+                new_x2 = rotated_frame.shape[1] - y2
+                new_y2 = x1
+                cv2.rectangle(rotated_frame, (new_x1, new_y1), (new_x2, new_y2), color, 2)
 
                 label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
-                label_ymin = max(y1, label_size[1] + 10)
-                cv2.rectangle(frame, (x1, label_ymin - label_size[1] - 10), (x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
-                cv2.putText(frame, label, (x1, label_ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                label_ymin = max(new_y1, label_size[1] + 10)
+                cv2.rectangle(rotated_frame, 
+                              (new_x1, label_ymin - label_size[1] - 10), 
+                              (new_x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
+                cv2.putText(rotated_frame, label, 
+                            (new_x1, label_ymin - 5), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+
 
         # frame_width = 1280
         # frame_height = 720
         # annotated_frame = cv2.resize(frame, (int(frame_width * (810 / frame_height)), 810))
         
         # ret, buffer = cv2.imencode('.jpg', annotated_frame)
-        annotated_frame = frame
+        annotated_frame = rotated_frame
         ret, buffer = cv2.imencode('.jpg', annotated_frame)
         frame = buffer.tobytes()
 
