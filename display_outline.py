@@ -35,14 +35,14 @@ model_path = "./models/mix_augment_oringchain.pt"
 model = YOLO(model_path)
 
 # Class names (replace with your custom names)
-custom_names = {0: 'oring-besar-NG',
-                1: 'oring-besar-OK', 
-                2: 'oring-kecil-NG', 
-                3: 'oring-kecil-OK', 
-                4: 'oring-sedang-NG', 
-                5: 'oring-sedang-OK', 
-                6: 'rantai-NG', 
-                7: 'rantai-OK'}  # Update with your actual class IDs and custom names
+custom_names = {0: 'o-big-NG',
+                1: 'o-big-OK', 
+                2: 'o-small-NG', 
+                3: 'o-small-OK', 
+                4: 'o-mid-NG', 
+                5: 'o-mid-OK', 
+                6: 'chain-NG', 
+                7: 'chain-OK'}  # Update with your actual class IDs and custom names
 
 # Custom colors for each class BGR
 custom_colors = {0: (0, 0, 255), 
@@ -145,26 +145,28 @@ def stream_video(device):
                 color = custom_colors.get(cls_id, (255, 255, 255))
                 
                 ##### ori gak rotasi
-                # cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-
-                # label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
-                # label_ymin = max(y1, label_size[1] + 10)
-                # cv2.rectangle(frame, (x1, label_ymin - label_size[1] - 10), (x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
-                # cv2.putText(frame, label, (x1, label_ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                new_x1 = rotated_frame.shape[1] - y1
-                new_y1 = x2
-                new_x2 = rotated_frame.shape[1] - y2
-                new_y2 = x1
-                cv2.rectangle(rotated_frame, (new_x1, new_y1), (new_x2, new_y2), color, 2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
 
                 label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
-                label_ymin = max(new_y1, label_size[1] + 10)
-                cv2.rectangle(rotated_frame, 
-                              (new_x1, label_ymin - label_size[1] - 10), 
-                              (new_x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
-                cv2.putText(rotated_frame, label, 
-                            (new_x1, label_ymin - 5), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                label_ymin = max(y1, label_size[1] + 10)
+                cv2.rectangle(frame, (x1, label_ymin - label_size[1] - 10), (x1 + label_size[0], label_ymin + 5), color, cv2.FILLED)
+                cv2.putText(frame, label, (x1, label_ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                
+                #kalu mau rotasi pake ini
+                # new_x1 = rotated_frame.shape[1] - y1
+                # new_y1 = x2
+                # new_x2 = rotated_frame.shape[1] - y2
+                # new_y2 = x1
+                # cv2.rectangle(rotated_frame, (new_x1, new_y1), (new_x2, new_y2), color, 2)
+
+                # label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+                # label_ymin = max(new_y2, label_size[1] + 10)
+                # cv2.rectangle(rotated_frame, 
+                #               (new_x2, label_ymin - label_size[1] - 10), 
+                #               (new_x2 + label_size[0], label_ymin + 5), color, cv2.FILLED)
+                # cv2.putText(rotated_frame, label, 
+                #             (new_x2, label_ymin - 5), 
+                #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
 
         # frame_width = 1280
@@ -172,7 +174,7 @@ def stream_video(device):
         # annotated_frame = cv2.resize(frame, (int(frame_width * (810 / frame_height)), 810))
         
         # ret, buffer = cv2.imencode('.jpg', annotated_frame)
-        annotated_frame = rotated_frame
+        annotated_frame = frame
         ret, buffer = cv2.imencode('.jpg', annotated_frame)
         frame = buffer.tobytes()
 
