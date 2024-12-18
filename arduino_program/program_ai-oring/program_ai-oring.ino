@@ -55,6 +55,7 @@ void read_pin_input() {
   //bagian reset didalamnya di tambahkan lagi kondisi bypass dan trigger karena biar gak ngunci loop nya
   if(digitalRead(reset_trigger) == LOW){
     Serial.println("reset_scan");
+    matikan_lampu();
     delay(100);
   }
   else if (digitalRead(start_trigger) == LOW) {
@@ -76,14 +77,23 @@ void read_data_python() {
       data.trim();
       //membaca hasil deteksi dari python
       if(data == "deteksi_ok"){ //jika hasil deteksi nya OK
-        digitalWrite(ok_trigger, HIGH);
         digitalWrite(ng_trigger, LOW);
+        digitalWrite(ok_trigger, HIGH);
+        delay(500);
+//        Serial.println("mau masuk while");
+        while(digitalRead(start_trigger)==false)//kalo sinyal TCR nya on nyalain ini
+              { 
+//                Serial.println("udah masuk while");
+                digitalWrite(ok_trigger, LOW);delay(1);
+                }
+//        Serial.println("dah lewat while");
+        digitalWrite(ok_trigger, HIGH);
         Serial.println("hasil nya oke");
 //      delay(5);
         }
       else if(data == "deteksi_ng"){ //jika hasil deteksi nya NG
-        blink_output(ng_trigger, 3, 5);
         digitalWrite(ok_trigger, LOW);
+        blink_output(ng_trigger, 3, 5);
         Serial.println("hasil nya jelek");
         }
       else if(data == "deteksi_reset"){ //jika hasil deteksi nya di reset
