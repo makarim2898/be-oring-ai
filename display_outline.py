@@ -110,6 +110,8 @@ def stream_video(device):
             time.sleep(2)
             continue
 
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+
         results = model(frame, conf=0.60, max_det=4)
 
         oring_besar = None
@@ -163,7 +165,7 @@ def stream_video(device):
         print(f"jumlah frame oke = {jumlah_frame_ok}")
         if oring_kecil and oring_besar and oring_sedang and rantai and not sudah_capture:
             jumlah_frame_ok += 1
-            if jumlah_frame_ok == 3:
+            if jumlah_frame_ok == 5:
                 latest_frame = frame
                 sudah_capture = True
                 oring_rantai_detected = True
