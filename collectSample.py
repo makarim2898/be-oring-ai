@@ -42,7 +42,6 @@ def stream_video(device):
     # frame_height = 480  # Initial frame height for 16:9 aspect ratio and 720p resolution
 
     # # Calculate the frame width based on the aspect ratio
-    # frame_width = int((frame_height / 9) * 16)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
     
