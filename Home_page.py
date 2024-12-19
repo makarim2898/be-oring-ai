@@ -14,6 +14,9 @@ import subprocess
 home_bearing = Blueprint('bearing_routes', __name__)
 CORS(home_bearing)
 
+#tingkat treshold dtection, tingkat kesesuaian
+conf_set = 0.80
+
 #definisi variabel global untuk flags
 inspectionFlag = False
 all_object_detected = False
@@ -39,9 +42,8 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "/home/kaizen/Desktop/O-ring_app/be-oring-ai/models/mix_augment_oringchain.pt"
-# model = YOLO("./models/yolov10_normal_online.pt")
-# model = YOLO("./models/best.pt")
+model_path = "./models/build scratch yolov8.pt"
+
 model = YOLO(model_path)
 
 # Class names (replace with your custom names)
@@ -109,7 +111,7 @@ def baca_data_arduino():
                 resetInspectionFlag = True
                 inspectionFlag = False
                 LS_PRESSED = True
-                latest_frame = None
+                # latest_frame = None #reset latest frame kagak di reset
                 update_data_dict('trigger_reset', True)
                 jumlah_frame_ok = 0
                 break
@@ -166,7 +168,7 @@ arduino_thread.daemon = True
 ############## function untuk stream frame ke client ################
 def stream_video(index_kamera_yang_di_pakai):
     global latest_frame, all_object_detected, inspectionFlag, updateData, resetInspectionFlag
-    global jumlah_frame_ok
+    global jumlah_frame_ok, LS_PRESSED
     global counter_gagal_connect, counter_gagal_baca
     time.sleep(2)
 
@@ -211,6 +213,13 @@ def stream_video(index_kamera_yang_di_pakai):
     last_ok_detected_count = 0
     jumlah_frame_ok = 0
 
+
+    #WADAH KOSONG BUAT FRAME NG
+    ng_detection_frame_1 = None
+    ng_detection_frame_2 = None
+    ng_no_detect_frame = None
+    ng_frame_saved  = False
+
     while True:
         if not cap.isOpened():
             print("Reinitializing camera...")
@@ -233,8 +242,8 @@ def stream_video(index_kamera_yang_di_pakai):
         #salin frame asli untuk disimpan saat ng untuk bahan training
         
         ### ini buat gambar box anotasi di frame
-        if inspectionFlag and resetInspectionFlag and latest_frame is None:
-            results = model(frame, conf=0.60, max_det=4, imgsz=640)
+        if inspectionFlag and resetInspectionFlag:
+            results = model(frame, conf=conf_set, max_det=4, imgsz=640)
 
             oring_besar_ok = False
             oring_sedang_ok = False
@@ -243,9 +252,8 @@ def stream_video(index_kamera_yang_di_pakai):
             oring_besar_ng = False
             oring_sedang_ng = False
             oring_kecil_ng = False
-            rantai_ng = False
-            detected_count = 0
-            detected_ng_count = 0           
+            rantai_ng = False        
+
             for r in results:
                 for box in r.boxes:
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
@@ -300,10 +308,12 @@ def stream_video(index_kamera_yang_di_pakai):
         # print(f"===== gagal baca : {counter_gagal_baca}, ===== gagal connect : {counter_gagal_connect}")
         print("flag status: inspection, resetInspect", inspectionFlag, resetInspectionFlag)
         print(f"detect_ok = {detected_count}, detect_ng = {detected_ng_count}")
+        print(f"last_detect_ok = {last_ok_detected_count}, detect_ng = {last_ng_detected_count}")
 
-        if inspectionFlag and resetInspectionFlag and latest_frame is None:
+        if inspectionFlag and resetInspectionFlag:
             
             if detected_count == 4 and oring_besar_ok and oring_kecil_ok and oring_sedang_ok and rantai_ok:
+                print(f"sudah masuk kondisi detek 4 object"+"+"*50)
                 jumlah_frame_ok += 1
                 if jumlah_frame_ok >= 3:
                     all_object_detected = True
@@ -314,65 +324,63 @@ def stream_video(index_kamera_yang_di_pakai):
                     kirim_data_ke_arduino("deteksi_ok")
                     save_image(annotated_frame, 'GOOD', 'inspection_complete')    
 
-            elif detected_ng_count > last_ng_detected_count:
+            elif (detected_ng_count > last_ng_detected_count) and (detected_ng_count != 0) :
+                print(f"sudah masuk kondisi ng detek"+"/"*20+f"detected_ng_count={detected_ng_count}, last_ng_detected_count={last_ng_detected_count}")
+                ng_detection_frame_1 = annotated_frame
+                latest_frame_1 = frame
                 all_object_detected = False
-                ng_detection_frame_1 = frame
 
-            elif detected_count > last_ok_detected_count:
+            elif (detected_count > last_ok_detected_count) and (detected_count != 0):
+                # print(f"sudah masuk kondisi detek gak 4"+"#"*20+f"detected_ng_count={detected_ng_count}, last_ng_detected_count={last_ng_detected_count}")
+                ng_detection_frame_2 = annotated_frame
+                latest_frame_2 = frame
                 all_object_detected = False
-                ng_detection_frame_2 = frame
 
             else:
+                # print(f"sudah masuk kondisi else"+"="*20+f"detected_ng_count={detected_ng_count}, last_ng_detected_count={last_ng_detected_count}")
+
+                ng_no_detect_frame = annotated_frame
+                latest_frame_3 = frame
                 all_object_detected = False
-                ng_no_detect_frame = frame
 
-            last_ok_detected_count = detected_count
-            last_ng_detected_count = detected_ng_count
+        #### note
+        #### buat debugging saat kondisi NG karena nilai frame ng selalu none
 
-            if LS_PRESSED and not all_object_detected:
-                jumlah_frame_ok = 0
-                if ng_detection_frame_1:
-                    latest_frame = ng_detection_frame_1
-                else :
-                    latest_frame = ng_detection_frame_2
-                    
-                update_data_dict('last_judgement', all_object_detected)
-                update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
-                kirim_data_ke_arduino("deteksi_ng")
+        if LS_PRESSED and not all_object_detected and not ng_frame_saved:
+            jumlah_frame_ok = 0
+            if ng_detection_frame_1 is not None:
+                latest_frame_ng = ng_detection_frame_1
+                latest_frame = latest_frame_1
+            elif ng_detection_frame_2 is not None:
+                latest_frame_ng = ng_detection_frame_2
+                latest_frame = latest_frame_2
+            else:
+                latest_frame_ng = ng_no_detect_frame
+                latest_frame = latest_frame_3
+            
+            #reset wadah frame NG
+            ng_detection_frame_1 = None
+            ng_detection_frame_2 = None
+            ng_no_detect_frame = None
 
+            latest_frame_1 = None
+            latest_frame_2 = None
+            latest_frame_3 = None
 
-        # if inspectionFlag and not resetInspectionFlag:
+            update_data_dict('last_judgement', all_object_detected)
+            update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
+            kirim_data_ke_arduino("deteksi_ng")
+            # print(f"Tipe data: {type(latest_frame)}, Ukuran: {latest_frame.shape if latest_frame is not None else 'None'}")
+            # print(f"Frame 1: {type(ng_detection_frame_1)}, Frame 2: {type(ng_detection_frame_2)}, No Detect: {type(ng_no_detect_frame)}")
+            save_image(latest_frame_ng, 'NG', 'not_complete')
+            print("#"*5+" DETEKSI NG "+"#"*5)
+            ng_frame_saved = True
 
-        #     if hitung_yang_ng :
-        #         frame_NG = annotated_frame
-        #     #kondisi ketika benda oke terdeteksi
-        #     elif hitung_yang_ok :
-        #         latest_frame = frame
-        #         all_object_detected = True
-        #         resetInspectionFlag = False
-        #         inspectionFlag = False
-        #         frameDelayDone = False
-        #         kirim_data_ke_arduino("out_ok")
-        #         
-        #         update_data_dict('last_judgement', all_object_detected)
-        #         update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
+        if not LS_PRESSED and ng_frame_saved:
+            ng_frame_saved = False
 
-        #         ################ lanjut dari sini, mau bikin kondisi saat ls reset kecolek
-        #         #setting flag menjadi false agar tidak looping
-        #         all_object_detected = False
-        #         resetInspectionFlag = False 
-        #         inspectionFlag = False
-        #         frameDelayDone = False
-                
-        #         print('Bearing not completed yet')
-        #         # save_image(frame_simpan, "original", "original_image")
-        #         # save_image(frame_simpan, 'NG', f'not_good_{kategori}')
-        #         update_data_dict('last_judgement', all_object_detected)
-        #         update_data_dict('sesion_judges', updateData['sesion_judges'] + 1)
-        #         kirim_data_ke_arduino("out_ng")
-
-        #     inspectionFlag = False
-      
+        last_ng_detected_count = detected_ng_count
+        last_ok_detected_count = detected_count
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
@@ -439,6 +447,7 @@ def function_update_csv(pathImg, filename):
 ############## Function untuk menampilkan last detection #################
 def last_detection():
     global latest_frame
+    print("ini di latest frame fuction")
     while True:
         if latest_frame is not None:
             yield (b'--frame\r\n'
