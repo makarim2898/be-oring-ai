@@ -15,7 +15,7 @@ home_bearing = Blueprint('bearing_routes', __name__)
 CORS(home_bearing)
 
 #tingkat treshold dtection, tingkat kesesuaian
-conf_set = 0.80
+conf_set = 0.70
 
 #definisi variabel global untuk flags
 inspectionFlag = False
