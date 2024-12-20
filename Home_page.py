@@ -39,10 +39,11 @@ updateData = {'total_judges': 0,
               'last_judgement': 'no data :)',
               'img_path' : '',
               'arduino_connected': False,
+              'LS_reset':0,
               }
 
 #load ypur yolo models from
-model_path = "./models/build scratch yolov8.pt"
+model_path = "./models/dataset_inline_added.pt"
 
 model = YOLO(model_path)
 
@@ -105,6 +106,7 @@ def baca_data_arduino():
                 inspectionFlag = True
                 LS_PRESSED = False
                 update_data_dict('trigger_start', True)
+                update_data_dict('LS_reset', False)
                 break
             elif input_data == "reset_scan":
                 print(f"FROM ARDUINO: {input_data}")
@@ -113,11 +115,13 @@ def baca_data_arduino():
                 LS_PRESSED = True
                 # latest_frame = None #reset latest frame kagak di reset
                 update_data_dict('trigger_reset', True)
+                update_data_dict('LS_reset', True)
                 jumlah_frame_ok = 0
                 break
             else:
                 update_data_dict('trigger_start', False)
                 update_data_dict('trigger_reset', False)
+                update_data_dict('LS_reset', False)
                 print(f"FROM ARDUINO: {input_data}")
                 break
         except serial.SerialException:
