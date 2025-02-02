@@ -15,7 +15,7 @@ home_bearing = Blueprint('bearing_routes', __name__)
 CORS(home_bearing)
 
 #tingkat treshold dtection, tingkat kesesuaian
-conf_set = 0.70
+conf_set = 0.76
 
 #definisi variabel global untuk flags
 inspectionFlag = False
@@ -43,7 +43,7 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "./models/dataset_inline_added.pt"
+model_path = "./models/ijiwaru 1-4.pt"
 
 model = YOLO(model_path)
 
@@ -207,15 +207,17 @@ def stream_video(index_kamera_yang_di_pakai):
     if not arduino_thread.is_alive():
         arduino_thread.start()
 
-    frame_width = 640
-    frame_height = 640
-    # frame_width = int((frame_height / 9) * 16)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+    # frame_width = 640
+    # frame_height = 640
+    # # frame_width = int((frame_height / 9) * 16)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 
     last_ng_detected_count = 0
     last_ok_detected_count = 0
     jumlah_frame_ok = 0
+    detected_count=0
+    detected_ng_count=0
 
 
     #WADAH KOSONG BUAT FRAME NG
@@ -309,10 +311,10 @@ def stream_video(index_kamera_yang_di_pakai):
         frame = buffer.tobytes()
 
 
-        # print(f"===== gagal baca : {counter_gagal_baca}, ===== gagal connect : {counter_gagal_connect}")
-        print("flag status: inspection, resetInspect", inspectionFlag, resetInspectionFlag)
-        print(f"detect_ok = {detected_count}, detect_ng = {detected_ng_count}")
-        print(f"last_detect_ok = {last_ok_detected_count}, detect_ng = {last_ng_detected_count}")
+        # # print(f"===== gagal baca : {counter_gagal_baca}, ===== gagal connect : {counter_gagal_connect}")
+        # print("flag status: inspection, resetInspect", inspectionFlag, resetInspectionFlag)
+        # print(f"detect_ok = {detected_count}, detect_ng = {detected_ng_count}")
+        # print(f"last_detect_ok = {last_ok_detected_count}, detect_ng = {last_ng_detected_count}")
 
         if inspectionFlag and resetInspectionFlag:
             
