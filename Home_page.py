@@ -43,7 +43,7 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "./models/rotate_varian_yolo11n.pt""
+model_path = "./models/rotate_varian_yolo11n.pt"
 
 model = YOLO(model_path)
 
