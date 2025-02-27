@@ -54,8 +54,9 @@ custom_names = {0: 'oring-besar-NG',
                 3: 'oring-kecil-OK', 
                 4: 'oring-sedang-NG', 
                 5: 'oring-sedang-OK', 
-                6: 'rantai-NG', 
-                7: 'rantai-OK'}  # Update with your actual class IDs and custom names
+                6: 'CHN-NG-FWD', 
+                7: 'CHN-OK',
+                8: 'CHN-NG-RVS'}  # Update with your actual class IDs and custom names
 
 # Custom colors for each class BGR
 custom_colors = {0: (0, 0, 255), 
@@ -65,7 +66,8 @@ custom_colors = {0: (0, 0, 255),
                  4: (0, 0, 255),
                  5: (0, 255, 0),
                  6: (0, 0, 255),
-                 7: (0, 255, 0)}  # Green for Class 1, Red for Class 2
+                 7: (0, 255, 0),
+                 8: (0, 0, 255),}  # Green for Class 1, Red for Class 2
 
 
 ############## function untuk arduino communication #########
