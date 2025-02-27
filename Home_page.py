@@ -43,7 +43,7 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "./models/best.pt"
+model_path = "./models/model yolo 11.pt"
 
 model = YOLO(model_path)
 
@@ -280,7 +280,7 @@ def stream_video(index_kamera_yang_di_pakai):
                         oring_sedang_ng = True
                     if cls_id == 5:
                         oring_sedang_ok = True
-                    if cls_id == 6:
+                    if (cls_id == 6) or (cls_id == 8) :
                         rantai_ng = True
                     if cls_id == 7:
                         rantai_ok = True
