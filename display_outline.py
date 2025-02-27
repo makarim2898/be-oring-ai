@@ -28,11 +28,9 @@ updateData = {'total_judges': 0,
               'arduino_connected': False,
               }
 
-#load ypur yolo models from
-model_path = "./models/mix_augment_oringchain.pt"
-# model = YOLO("./models/yolov10_normal_online.pt")
-# model = YOLO("./models/best.pt")
-model = YOLO(model_path)
+#load ypur yolo models fro
+model = YOLO("./models/best.pt")
+# model = YOLO(model_path)
 
 # Class names (replace with your custom names)
 custom_names = {0: 'o-big-NG',
