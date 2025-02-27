@@ -29,7 +29,7 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "./models/model yolo 11.pt"
+model_path = "./models/mix_augment_oringchain.pt"
 # model = YOLO("./models/yolov10_normal_online.pt")
 # model = YOLO("./models/best.pt")
 model = YOLO(model_path)
@@ -66,33 +66,11 @@ def stream_video(device):
     sudah_capture = False
     ada_object = 0
     jumlah_last_ng = 0
+    
+    device = "/home/komputer/Downloads/FULL TEST VIDEO.mp4"
     cap = cv2.VideoCapture(device)
 
-    while not cap.isOpened() and retry_count < max_retry:
-        print(f"Retrying camera connection... attempt {retry_count + 1}")
-        cap = cv2.VideoCapture(device)
-        time.sleep(2)
-        retry_count += 1
-
-    if not cap.isOpened():
-        # Generate a placeholder frame with error message
-        error_frame = np.zeros((500, 800, 3), np.uint8)
-        pesan_string = f'''Camera index {device} out of range
-                            Silahkan tekan Refresh Camera atau Halaman Web
-                            jika masih berlanjut Lepas pasang USB pada Camera
-                            jika masih error lambaikan tangan pada kamera'''
-        cv2.putText(error_frame, pesan_string, (50, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-        ret, buffer = cv2.imencode('.jpg', error_frame)
-        error_frame = buffer.tobytes()
-        
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + error_frame + b'\r\n')
-
-    frame_width = 640
-    frame_height = 640
-    # frame_width = int((frame_height / 9) * 16)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+    
 
     while True:
         if not cap.isOpened():
