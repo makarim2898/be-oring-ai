@@ -43,7 +43,7 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "./models/ijiwaru 1-4.pt"
+model_path = "./models/best.pt"
 
 model = YOLO(model_path)
 
