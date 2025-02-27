@@ -43,7 +43,7 @@ updateData = {'total_judges': 0,
               }
 
 #load ypur yolo models from
-model_path = "./models/best.pt"
+model_path = "models/rotate_varian_yolo11n.pt"
 
 model = YOLO(model_path)
 
@@ -55,8 +55,8 @@ custom_names = {0: 'oring-besar-NG',
                 4: 'oring-sedang-NG', 
                 5: 'oring-sedang-OK', 
                 6: 'CHN-NG-FWD', 
-                7: 'CHN-OK',
-                8: 'CHN-NG-RVS'}  # Update with your actual class IDs and custom names
+                7: 'CHN-NG-RVS',
+                8: 'CHN-OK'}  # Update with your actual class IDs and custom names
 
 # Custom colors for each class BGR
 custom_colors = {0: (0, 0, 255), 
@@ -66,8 +66,8 @@ custom_colors = {0: (0, 0, 255),
                  4: (0, 0, 255),
                  5: (0, 255, 0),
                  6: (0, 0, 255),
-                 7: (0, 255, 0),
-                 8: (0, 0, 255),}  # Green for Class 1, Red for Class 2
+                 7: (0, 0, 255),
+                 8: (0, 255, 0),}  # Green for Class 1, Red for Class 2
 
 
 ############## function untuk arduino communication #########
@@ -280,9 +280,9 @@ def stream_video(index_kamera_yang_di_pakai):
                         oring_sedang_ng = True
                     if cls_id == 5:
                         oring_sedang_ok = True
-                    if cls_id == 6:
+                    if cls_id == 6 or cls_id == 7:
                         rantai_ng = True
-                    if cls_id == 7:
+                    if cls_id == 8:
                         rantai_ok = True
                         
                     label = f"{custom_names.get(cls_id, cls_id)}: {confidence:.2f}"
